@@ -5,5 +5,5 @@ export const PATH = {
   SIGNUP: "/signup",
 
   // API
-  SIGNIN_GOOGLE: "/signin/google",
+  SIGNIN_GOOGLE: "/auth/google",
 };

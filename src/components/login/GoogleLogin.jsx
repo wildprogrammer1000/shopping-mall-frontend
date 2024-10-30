@@ -12,6 +12,7 @@ export const GoogleLogin = ({ client_id, buttonText, onSuccess }) => {
 const GoogleLoginButton = ({ buttonText }) => {
   const onSuccessLogin = () => {};
   const tryLogin = useGoogleLogin({
+    redirect_uri: "http://localhost:8080/auth/google",
     flow: "auth-code",
     onSuccess: async (codeResponse) => {
       const requestOptions = {
