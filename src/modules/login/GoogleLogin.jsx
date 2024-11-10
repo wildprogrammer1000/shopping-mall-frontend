@@ -4,25 +4,23 @@ import { requestFetch } from "../../utils/fetch";
 export const GoogleLogin = ({ client_id, buttonText, onSuccess }) => {
   return (
     <GoogleOAuthProvider clientId={client_id}>
-      <GoogleLoginButton buttonText={buttonText} />
+      <GoogleLoginButton buttonText={buttonText} onSuccess={onSuccess} />
     </GoogleOAuthProvider>
   );
 };
 
-const GoogleLoginButton = ({ buttonText }) => {
-  const onSuccessLogin = () => {};
+const GoogleLoginButton = ({ buttonText, onSuccess }) => {
   const tryLogin = useGoogleLogin({
-    redirect_uri: "http://localhost:8080/auth/google",
     flow: "auth-code",
     onSuccess: async (codeResponse) => {
       const requestOptions = {
         method: "post",
-        body: JSON.stringify({
+        data: {
           code: codeResponse.code,
-        }),
+        },
       };
       const response = await requestFetch(PATH.SIGNIN_GOOGLE, requestOptions);
-      console.log("response: ", response);
+      onSuccess(response);
     },
   });
   return <button onClick={tryLogin}>{buttonText}</button>;

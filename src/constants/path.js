@@ -6,4 +6,7 @@ export const PATH = {
 
   // API
   SIGNIN_GOOGLE: "/auth/google",
+
+  // PRODUCT
+  LIST_PRODUCTS: "/getProductList",
 };
