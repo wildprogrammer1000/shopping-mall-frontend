@@ -12,7 +12,7 @@ const router = createBrowserRouter([
   { path: PATH.ROOT, element: <App /> },
   { path: PATH.LOGIN, element: <LoginView /> },
   { path: PATH.SIGNUP, element: <SignUpView /> },
-  { path: `${PATH.PRODUCT}/:productId`, element: <Product /> },
+  { path: `${PATH.PRODUCT}/:product_id`, element: <Product /> },
 ]);
 
 createRoot(document.getElementById("root")).render(
