@@ -6,11 +6,13 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { PATH } from "./constants/path.js";
 import LoginView from "./views/LoginView.jsx";
 import SignUpView from "./views/SignUpView.jsx";
+import Product from "./components/Product.jsx";
 
 const router = createBrowserRouter([
   { path: PATH.ROOT, element: <App /> },
   { path: PATH.LOGIN, element: <LoginView /> },
   { path: PATH.SIGNUP, element: <SignUpView /> },
+  { path: `${PATH.PRODUCT}/:productId`, element: <Product /> },
 ]);
 
 createRoot(document.getElementById("root")).render(

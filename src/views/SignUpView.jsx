@@ -3,6 +3,7 @@ import { useUser } from "../store/context";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PATH } from "../constants/path";
+import { requestFetch } from "../utils/fetch";
 
 const SignUpView = () => {
   const navigate = useNavigate();
@@ -14,6 +15,24 @@ const SignUpView = () => {
 
   const validate = async () => {
     // TODO BE: 닉네임 중복 체크 API 구현
+  };
+  const handleSubmit = async () => {
+    // if (!validated) return;
+    try {
+      const response = await requestFetch("/user/nickname", {
+        method: "POST",
+        data: {
+          email: user.email,
+          nickname: formState.nickname,
+        },
+      });
+      // console.log(response);
+      // if (response) {
+        navigate(PATH.ROOT);
+      // }
+    } catch (error) {
+      alert("닉네임 설정에 실패했습니다.");
+    }
   };
   useEffect(() => {
     if (!user) {
@@ -45,7 +64,8 @@ const SignUpView = () => {
         />
         <Button onClick={validate}>중복확인</Button>
       </Box>
-      <Button fullWidth variant="contained" disabled={!validated}>
+      {/* <Button fullWidth variant="contained" disabled={!validated}> */}
+      <Button fullWidth variant="contained" onClick={handleSubmit}>
         완료
       </Button>
     </Box>

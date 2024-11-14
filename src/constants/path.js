@@ -3,6 +3,7 @@ export const PATH = {
   ROOT: "/",
   LOGIN: "/login",
   SIGNUP: "/signup",
+  PRODUCT: "/product",
 
   // API
   SIGNIN_GOOGLE: "/auth/google",
