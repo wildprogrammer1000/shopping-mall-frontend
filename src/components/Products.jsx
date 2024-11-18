@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Button, 
-  Grid2, 
-  Card, 
-  CardContent, 
-  Typography, 
+import {
+  Button,
+  Grid2,
+  Card,
+  CardContent,
+  Typography,
   Container,
   Box,
   Pagination,
@@ -15,6 +15,7 @@ import {
   TextField,
   InputLabel
 } from '@mui/material';
+import { requestFetch } from '../utils/fetch';
 
 function ProductList() {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ function ProductList() {
   useEffect(() => {
     const start = (page - 1) * itemsPerPage + 1;
     const end = page * itemsPerPage;
-    
+
     setSearchParams(prev => ({
       ...prev,
       start,
@@ -67,24 +68,22 @@ function ProductList() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const queryString = new URLSearchParams({
-        start: searchParams.start.toString(),
-        end: searchParams.end.toString(),
-        search_type: searchParams.search_type,
-        search_value: searchParams.search_value,
-        date_search_type: searchParams.date_search_type || ''
-      }).toString();
 
-      console.log('요청 파라미터:', queryString);
+      const response = await requestFetch(`/getProductList`, {
+        params: {
+          start: searchParams.start.toString(),
+          end: searchParams.end.toString(),
+          search_type: searchParams.search_type,
+          search_value: searchParams.search_value,
+          date_search_type: searchParams.date_search_type || ''
+        }
+      });
 
-      const response = await fetch(`http://localhost:8080/getProductList?${queryString}`);
-      const data = await response.json();
-      
-      console.log('서버 응답:', data); // 디버깅용
-      
-      if (data && data.product_list) {
-        setProducts(data.product_list);
-        setTotalCount(data.total_count);
+      console.log('서버 응답:', response); // 디버깅용
+
+      if (response && response.product_list) {
+        setProducts(response.product_list);
+        setTotalCount(response.total_count);
       } else {
         setProducts([]);
         setTotalCount(0);
@@ -214,7 +213,7 @@ function ProductList() {
         </Box>
       );
     }
-    
+
     return (
       <TextField
         label="검색어"
@@ -281,17 +280,17 @@ function ProductList() {
 
           {renderSearchInput()}
 
-          <Button 
-            type="submit" 
-            variant="contained" 
+          <Button
+            type="submit"
+            variant="contained"
             color="primary"
             disabled={!searchType || !searchValue}
           >
             검색
           </Button>
 
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             onClick={handleReset}
           >
             초기화
@@ -301,7 +300,7 @@ function ProductList() {
         {searchType && searchValue && (
           <Typography sx={{ mb: 2 }}>
             검색 조건: {searchTypes.find(t => t.value === searchType)?.label}
-            {searchType === 'created_at' && ` (${dateSearchTypes.find(t => t.value === dateSearchType)?.label})`} / 
+            {searchType === 'created_at' && ` (${dateSearchTypes.find(t => t.value === dateSearchType)?.label})`} /
             검색어: {searchValue}
           </Typography>
         )}
@@ -353,16 +352,16 @@ function ProductList() {
             </Grid2>
           )}
         </Grid2>
-        
+
         {/* 페이지네이션 수정 */}
         {shouldShowPagination() && (
-          <Box sx={{ 
-            display: 'flex', 
+          <Box sx={{
+            display: 'flex',
             justifyContent: 'center',
-            mt: 4 
+            mt: 4
           }}>
-            <Pagination 
-              count={Math.ceil(totalCount / itemsPerPage)} 
+            <Pagination
+              count={Math.ceil(totalCount / itemsPerPage)}
               page={page}
               onChange={handlePageChange}
               color="primary"
