@@ -8,12 +8,14 @@ import {
   TextField,
   Typography 
 } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
 
 const CartList = () => {
   const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState({});
   const [editQuantities, setEditQuantities] = useState({});
   const [user, setUser] = useUser();
+  const navigate = useNavigate();
 
   const refreshSession = async () => {
     try {
@@ -64,7 +66,7 @@ const CartList = () => {
 
   const getCurrentTotalPrice = (item) => {
     const currentQuantity = getCurrentQuantity(item);
-    return currentQuantity * parseInt(item.product_price);
+    return Math.floor(currentQuantity * item.product_price);
   };
 
   const getTotalPrice = () => {
@@ -177,6 +179,54 @@ const CartList = () => {
     }
   };
 
+  // 선택된 항목 삭제 처리
+  const handleDeleteSelected = async () => {
+    const selectedCount = Object.values(selectedItems).filter(Boolean).length;
+    if (selectedCount === 0) {
+      alert('삭제할 항목을 선택해주세요.');
+      return;
+    }
+
+    if (window.confirm(`선택한 ${selectedCount}개의 제품을 삭제하시겠습니까?`)) {
+      try {
+        const itemsToDelete = cartItems.filter(item => selectedItems[item.cart_id]);
+        
+        await requestFetch('/deleteCart', {
+          method: 'POST',
+          data: itemsToDelete
+        });
+
+        // 삭제 후 장바구니 목록 새로고침
+        await fetchCartList();
+        // 선택 상태 초기화
+        setSelectedItems({});
+        
+        alert('선택한 상품이 삭제되었습니다.');
+      } catch (error) {
+        console.error('장바구니 항목 삭제 실패:', error);
+        alert('삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  // 주문하기 처리 함수 추가
+  const handleOrder = () => {
+    const selectedProducts = cartItems.filter(item => selectedItems[item.cart_id]);
+    if (selectedProducts.length === 0) {
+      console.log("selectedProducts: ", selectedProducts);
+      alert('주문할 상품을 선택해주세요.');
+      return;
+    }
+    
+    // 선택된 상품 정보를 state로 전달하며 주문 페이지로 이동
+    navigate('/orderList', { 
+      state: { 
+        products: selectedProducts,
+        totalPrice: getTotalPrice()
+      } 
+    });
+  };
+
   if (!user) {
     return <Box sx={{ textAlign: 'center', padding: '2rem' }}>로그인이 필요합니다.</Box>;
   }
@@ -230,8 +280,8 @@ const CartList = () => {
                   gap: '10px',
                   flex: 1
                 }}>
-                  <Typography>상품 ID: {item.product_id}</Typography>
-                  <Typography>가격: {item.product_price}원</Typography>
+                  <Typography>상품 이름: {item.product_name}</Typography>
+                  <Typography>가격: {Math.floor(item.product_price)}원</Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Typography>수량:</Typography>
                     <Button 
@@ -275,7 +325,7 @@ const CartList = () => {
                     </Button>
                   </Box>
                   <Typography>
-                    총 금액: {getCurrentTotalPrice(item).toLocaleString()}원
+                    총 금액: {Math.floor(getCurrentTotalPrice(item)).toLocaleString()}원
                   </Typography>
                   <Typography>등록일: {item.created_at}</Typography>
                 </Box>
@@ -303,15 +353,34 @@ const CartList = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center'
               }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleUpdateAll}
-                  disabled={!hasModifiedItems()}
-                  sx={{ marginRight: '20px' }}
-                >
-                  전체 수정
-                </Button>
+                <Box>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleUpdateAll}
+                    disabled={!hasModifiedItems()}
+                    sx={{ marginRight: '10px' }}
+                  >
+                    전체 수정
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={handleDeleteSelected}
+                    disabled={!Object.values(selectedItems).some(Boolean)}
+                    sx={{ marginRight: '10px' }}
+                  >
+                    선택 삭제
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={handleOrder}
+                    disabled={!Object.values(selectedItems).some(Boolean)}
+                  >
+                    주문하기
+                  </Button>
+                </Box>
                 <Typography variant="h6">
                   선택된 상품 총액: {getTotalPrice().toLocaleString()}원
                 </Typography>
