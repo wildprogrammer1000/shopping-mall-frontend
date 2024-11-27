@@ -30,6 +30,28 @@ function ProductDetail() {
     setUser(response);
   }
 
+  const handlePurchase = async () => {
+    if (!user) {
+      setMessage("로그인이 필요한 서비스입니다");
+      return;
+    }
+
+    navigate(PATH.ORDERLIST, {
+      state: {
+        products: [{
+          id: user.id,
+          product_id: parseInt(product_id),
+          product_name: product.product_name,
+          product_price: product.product_price,
+          quantity: quantity,
+        }],
+        totalPrice: product.product_price * quantity
+        
+      }
+    });
+  };
+
+
   useEffect(() => {
     refreshSession();
     if (!product_id) {
@@ -160,9 +182,7 @@ function ProductDetail() {
                   variant="contained"
                   size="large"
                   sx={{ flex: 1 }}
-                  onClick={() => {
-                    /* 구매 로직 구현 */
-                  }}
+                  onClick={handlePurchase}
                 >
                   구매하기
                 </Button>
