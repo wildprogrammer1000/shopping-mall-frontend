@@ -3,12 +3,13 @@ export const PATH = {
   ROOT: "/",
   LOGIN: "/login",
   SIGNUP: "/signup",
-
+  
   // API
   SIGNIN_GOOGLE: "/auth/google",
-
+  
   // USER
   MYPAGE: '/user/session',
+  LOGOUT: "/user/logout",
 
   // PRODUCT
   LIST_PRODUCTS: "/getProductList",

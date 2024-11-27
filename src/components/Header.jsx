@@ -11,9 +11,16 @@ const Header = () => {
     const response = await requestFetch('/user/session');
     setUser(response);
   }
+
+  const handleLogout = async () => {
+    await requestFetch('/user/logout');
+    setUser(null);
+  }
+
   useEffect(() => {
     refreshSession();
   }, [])
+
   return (
     <Box
       sx={{ position: "relative", display: "flex", justifyContent: "flex-end" }}
@@ -35,6 +42,7 @@ const Header = () => {
           <div>{user.nickname}</div>
           <Link to={PATH.MYPAGE}>마이페이지</Link>
           <Link to={PATH.CARTLIST}>장바구니</Link>
+          <div onClick={handleLogout} style={{ cursor: 'pointer' }}>로그아웃</div>
         </div>
       ) : (
         <div>
