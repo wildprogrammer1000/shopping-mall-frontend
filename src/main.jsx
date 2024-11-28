@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { ContextProvider } from "./store/context.jsx";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import { PATH } from "./constants/path.js";
 import LoginView from "./views/LoginView.jsx";
 import SignUpView from "./views/SignUpView.jsx";
@@ -11,16 +11,31 @@ import Product from "./components/Product.jsx";
 import CartList from "./components/CartList.jsx";
 import OrderList from "./components/OrderList.jsx";
 import AddressListModal from "./components/AddressListModal.jsx";
+import Header from "./components/Header.jsx";
+
+const Layout = () => {
+  return (
+    <>
+      <Header />
+      <Outlet />
+    </>
+  )
+}
 
 const router = createBrowserRouter([
-  { path: PATH.ROOT, element: <App /> },
-  { path: PATH.SIGNUP, element: <SignUpView /> },
-  { path: PATH.LOGIN, element: <LoginView /> },
-  { path: PATH.MYPAGE, element: <MyPage /> },
-  { path: `${PATH.PRODUCT}/:product_id`, element: <Product /> },
-  { path: PATH.CARTLIST, element: <CartList /> },
-  { path: PATH.ORDERLIST, element: <OrderList /> },
-  { path: PATH.ADDRESSLISTMODAL, element: <AddressListModal /> },
+  {
+    element: <Layout />,
+    children: [
+      { path: PATH.ROOT, element: <App /> },
+      { path: PATH.SIGNUP, element: <SignUpView /> },
+      { path: PATH.LOGIN, element: <LoginView /> },
+      { path: PATH.MYPAGE, element: <MyPage /> },
+      { path: `${PATH.PRODUCT}/:product_id`, element: <Product /> },
+      { path: PATH.CARTLIST, element: <CartList /> },
+      { path: PATH.ORDERLIST, element: <OrderList /> },
+      { path: PATH.ADDRESSLISTMODAL, element: <AddressListModal /> },
+    ],
+  },
 ]);
 
 createRoot(document.getElementById("root")).render(

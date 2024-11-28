@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header";
 import { GoogleLogin } from "../modules/login/GoogleLogin";
 import { useUser } from "../store/context";
 import { PATH } from "../constants/path";
@@ -13,7 +12,6 @@ const LoginView = () => {
   };
   return (
     <>
-      <Header />
       <GoogleLogin
         client_id={import.meta.env.VITE_GOOGLE_CLIENT_ID}
         buttonText={"구글로 로그인"}
