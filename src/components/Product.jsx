@@ -5,12 +5,8 @@ import {
   Container,
   Box,
   Typography,
-  Card,
-  CardMedia,
-  CardContent,
   Button,
   Grid2,
-  Divider,
   Paper,
 } from "@mui/material";
 import { PATH } from "../constants/path";
@@ -43,10 +39,10 @@ function ProductDetail() {
           product_id: parseInt(product_id),
           product_name: product.product_name,
           product_price: product.product_price,
+          total_price: product.product_price * quantity,
           quantity: quantity,
         }],
-        totalPrice: product.product_price * quantity
-        
+        total_price: product.product_price * quantity   
       }
     });
   };

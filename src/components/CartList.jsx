@@ -213,7 +213,6 @@ const CartList = () => {
   const handleOrder = () => {
     const selectedProducts = cartItems.filter(item => selectedItems[item.cart_id]);
     if (selectedProducts.length === 0) {
-      console.log("selectedProducts: ", selectedProducts);
       alert('주문할 상품을 선택해주세요.');
       return;
     }
@@ -222,7 +221,7 @@ const CartList = () => {
     navigate('/orderList', { 
       state: { 
         products: selectedProducts,
-        totalPrice: getTotalPrice()
+        total_price: getTotalPrice()
       } 
     });
   };

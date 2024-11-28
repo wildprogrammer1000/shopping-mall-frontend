@@ -20,4 +20,5 @@ export const PATH = {
 
   // ORDER
   ORDERLIST: "/orderList",
+  ORDERCOMPLETE: "/order/complete",
 };

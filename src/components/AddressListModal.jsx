@@ -1,4 +1,4 @@
-import { Modal, Box, Typography, List, ListItem, ListItemText, Radio, Button, TextField, FormControlLabel, Checkbox } from '@mui/material';
+import { Modal, Box, Typography, List, ListItem, Radio, Button, TextField, FormControlLabel, Checkbox } from '@mui/material';
 import { useState } from 'react';
 import { requestFetch } from '../utils/fetch';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -23,16 +23,16 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
     id: user.id || '',
     name: '',
     phone: '',
-    address: '',
+    shipping_address: '',
     is_default: 0,
     nickname: '',
     zonecode: ''
   });
   const [detailAddress, setDetailAddress] = useState('');
 
-  const handleAddressClick = (address) => {
+  const handleAddressClick = (shippingAddress) => {
     if (window.confirm('이 주소를 배송지로 선택하시겠습니까?')) {
-      onSelectAddress(address);
+      onSelectAddress(shippingAddress);
       handleClose();
     }
   };
@@ -42,7 +42,7 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
       oncomplete: function (data) {
         setNewAddress(prev => ({
           ...prev,
-          address: data.address,
+          shipping_address: data.shipping_address,
           zonecode: data.zonecode
         }));
         setShowAddressForm(true);
@@ -65,7 +65,7 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
           id: user.id,
           name: newAddress.name,
           phone: newAddress.phone,
-          address: newAddress.address + (detailAddress ? ` ${detailAddress}` : ''),
+          shipping_address: newAddress.shipping_address + (detailAddress ? ` ${detailAddress}` : ''),
           is_default: newAddress.is_default,
           nickname: newAddress.nickname
         }
@@ -81,7 +81,7 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
         id: user.id,
         name: '',
         phone: '',
-        address: '',
+        shipping_address: '',
         is_default: 0,
         nickname: '',
         zonecode: ''
@@ -93,14 +93,14 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
     }
   };
 
-  const handleDefaultAddressChange = async (address) => {
+  const handleDefaultAddressChange = async (shippingAddress) => {
     if (window.confirm('이 주소를 기본 배송지로 설정하시겠습니까?')) {
       try {
         await requestFetch('/user/insertShippingInfo', {
           method: 'POST',
           data: {
             id: user.id,
-            shipping_id: address.shipping_id,
+            shipping_id: shippingAddress.shipping_id,
             is_default: 1,
           }
         });
@@ -113,21 +113,21 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
     }
   };
 
-  const handleDeleteAddress = async (address, e) => {
-    e.stopPropagation(); // 주소 선택 이벤트 전파 방지
-    
+  const handleDeleteAddress = async (shippingAddress, e) => {
+    e.stopPropagation();
+
     if (window.confirm('이 주소를 삭제하시겠습니까?')) {
       try {
         await requestFetch('/user/deleteShippingInfo', {
           method: 'POST',
           data: {
             id: user.id,
-            shipping_id: address.shipping_id
+            shipping_id: shippingAddress.shipping_id
           }
         });
-        
+
         alert('배송지가 삭제되었습니다.');
-        fetchAddressList(); // 배송지 목록 새로고침
+        fetchAddressList();
       } catch (error) {
         console.error('Error:', error);
         alert('배송지 삭제 중 오류가 발생했습니다.');
@@ -157,7 +157,7 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
                 배송지 추가
               </Button>
             </Box>
-            
+
             {addressList.length === 0 ? (
               <Box sx={{
                 display: 'flex',
@@ -188,8 +188,8 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
                   color: '#666'
                 }}>
                   <Box sx={{ flex: 1 }}>배송지</Box>
-                  <Box sx={{ 
-                    display: 'flex', 
+                  <Box sx={{
+                    display: 'flex',
                     gap: '10px',
                     alignItems: 'center'
                   }}>
@@ -202,7 +202,7 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
                   maxHeight: '400px',
                   overflow: 'auto'
                 }}>
-                  {addressList.map((address, index) => (
+                  {addressList.map((shippingAddress, index) => (
                     <ListItem
                       key={index}
                       sx={{
@@ -224,38 +224,38 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
                           boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
                         }
                       }}
-                      onClick={() => handleAddressClick(address)}
+                      onClick={() => handleAddressClick(shippingAddress)}
                     >
                       <div>
                         <Typography variant="subtitle1" component="div">
-                          {address.nickname || '배송지 ' + (index + 1)}
+                          {shippingAddress.nickname || '배송지 ' + (index + 1)}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {address.name} | {address.phone}
+                          {shippingAddress.name} | {shippingAddress.phone}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {address.address}
+                          {shippingAddress.shipping_address}
                         </Typography>
                       </div>
                       <div
                         style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {address.is_default === 1 ? (
+                        {shippingAddress.is_default === 1 ? (
                           <Typography variant="body2" color="primary">
                             기본배송지
                           </Typography>
                         ) : (
                           <Radio
                             checked={false}
-                            onChange={() => handleDefaultAddressChange(address)}
+                            onChange={() => handleDefaultAddressChange(shippingAddress)}
                             name="default-address"
                             size="small"
                           />
                         )}
                         <IconButton
                           size="small"
-                          onClick={(e) => handleDeleteAddress(address, e)}
+                          onClick={(e) => handleDeleteAddress(shippingAddress, e)}
                           sx={{ ml: 1 }}
                         >
                           <DeleteIcon fontSize="small" />
@@ -266,7 +266,7 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
                 </List>
               </>
             )}
-            
+
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
               <Button variant="outlined" onClick={handleClose}>
                 취소
@@ -296,12 +296,12 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
               />
               <TextField
                 label="주소"
-                value={newAddress.address}
+                value={newAddress.shipping_address}
                 InputProps={{ readOnly: true }}
                 fullWidth
                 required
               />
-              {newAddress.address && (
+              {newAddress.shipping_address && (
                 <TextField
                   fullWidth
                   size="small"
@@ -338,7 +338,7 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
                     setNewAddress({
                       name: '',
                       phone: '',
-                      address: '',
+                      shipping_address: '',
                       is_default: 0,
                       nickname: '',
                       zonecode: ''
@@ -351,7 +351,7 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
                 <Button
                   variant="contained"
                   onClick={handleSubmitAddress}
-                  disabled={!newAddress.name || !newAddress.phone || !newAddress.address}
+                  disabled={!newAddress.name || !newAddress.phone || !newAddress.shipping_address}
                 >
                   저장
                 </Button>

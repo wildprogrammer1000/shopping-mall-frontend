@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { requestFetch } from "../utils/fetch";
 import AddressListModal from './AddressListModal';
 import {
@@ -19,7 +19,7 @@ import {
 
 const OrderList = () => {
   const location = useLocation();
-  const { products, totalPrice } = location.state || { products: [], totalPrice: 0 };
+  const { products, total_price } = location.state || { products: [], total_price: 0 };
   const [shippingInfo, setShippingInfo] = useState(null);
   const DELIVERY_FEE = 3000; // 배송비 OrderList
   const [user, setUser] = useState(JSON.parse(sessionStorage.getItem('user')));
@@ -30,6 +30,7 @@ const OrderList = () => {
     message: '',
     severity: 'success'
   });
+  const navigate = useNavigate();
   const refreshSession = async () => {
     try {
       const response = await requestFetch('/user/session');
@@ -50,7 +51,6 @@ const OrderList = () => {
     }
   };
   const handleAddressSelect = async (selectedAddress) => {
-    console.log('Selected address:', selectedAddress);
     try {
       setShippingInfo(selectedAddress);
 
@@ -69,6 +69,106 @@ const OrderList = () => {
         severity: 'error'
       });
     }
+  };
+
+  const handlePayment = () => {
+    if (!shippingInfo) {
+      setSnackbar({
+        open: true,
+        message: '배송지를 선택해주세요.',
+        severity: 'error'
+      });
+      return;
+    }
+
+    const orderName = products.length > 1
+      ? `${products[0].product_name} 외 ${products.length - 1}건`
+      : products[0].product_name;
+
+    IMP.request_pay({
+      pg: 'html5_inicis',
+      pay_method: 'card',
+      merchant_uid: `ord-${crypto.randomUUID()}`,
+      name: orderName,
+      amount: total_price + DELIVERY_FEE,
+      buyer_email: user.email || '',
+      buyer_name: shippingInfo.name,
+      buyer_tel: shippingInfo.phone,
+      buyer_addr: shippingInfo.shipping_address,
+    }, async function (response) {
+      try {
+        if (response.success) {
+          const orderData = {
+            imp_uid: response.imp_uid,
+            merchant_uid: response.merchant_uid,
+            id: user.id,
+            products: products,
+            shippingInfo: shippingInfo,
+            totalAmount: total_price + DELIVERY_FEE,
+            shippingFee: DELIVERY_FEE,
+            paymentStatus: 'SUCCESS'
+          };
+
+          try {
+            const orderResponse = await requestFetch('/order/complete', {
+              method: 'POST',
+              data: orderData
+            });
+
+            // 성공 처리
+            setSnackbar({
+              open: true,
+              message: '결제가 완료되었습니다.',
+              severity: 'success'
+            });
+
+            navigate('/order/complete', {
+              state: {
+                orderData,
+                paymentResponse: response
+              }
+            });
+          } catch (error) {
+            console.error('주문 처리 실패:', error.response?.data || error.message);
+
+            // 결제 취소 로직 추가
+            try {
+              await requestFetch('/payment/cancel', {
+                method: 'POST',
+                data: {
+                  imp_uid: response.imp_uid,
+                  merchant_uid: response.merchant_uid,
+                  reason: '주문 처리 실패'
+                }
+              });
+            } catch (cancelError) {
+              console.error('결제 취소 실패:', cancelError);
+            }
+
+            setSnackbar({
+              open: true,
+              message: '주문 처리에 실패했습니다. 결제가 취소됩니다.',
+              severity: 'error'
+            });
+          }
+        } else {
+          // 결제 실패 시
+          console.error('결제 실패:', response);
+          setSnackbar({
+            open: true,
+            message: `결제에 실패했습니다: ${response.error_msg}`,
+            severity: 'error'
+          });
+        }
+      } catch (error) {
+        console.error('주문 처리 중 오류:', error);
+        setSnackbar({
+          open: true,
+          message: '주문 처리 중 오류가 발생했습니다.',
+          severity: 'error'
+        });
+      }
+    });
   };
 
   useEffect(() => {
@@ -116,10 +216,10 @@ const OrderList = () => {
   return (
     <Box sx={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
       {/* 주문서 제목 추가 */}
-      <Typography 
-        variant="h4" 
-        sx={{ 
-          marginBottom: '30px', 
+      <Typography
+        variant="h4"
+        sx={{
+          marginBottom: '30px',
           fontWeight: 'bold',
           textAlign: 'center'
         }}
@@ -175,7 +275,7 @@ const OrderList = () => {
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell colSpan={3}>{shippingInfo.address}</TableCell>
+                    <TableCell colSpan={3}>{shippingInfo.shipping_address}</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>{shippingInfo.name}</TableCell>
@@ -185,9 +285,9 @@ const OrderList = () => {
               </Table>
             </TableContainer>
           ) : (
-            <Box sx={{ 
-              padding: '20px', 
-              border: '1px solid #e0e0e0', 
+            <Box sx={{
+              padding: '20px',
+              border: '1px solid #e0e0e0',
               borderRadius: '4px',
               display: 'flex',
               flexDirection: 'column',
@@ -233,7 +333,7 @@ const OrderList = () => {
             <Typography variant="h6" sx={{ marginBottom: '20px' }}>결제 금액</Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
               <Typography>상품금액</Typography>
-              <Typography>{Math.floor(totalPrice).toLocaleString()}원</Typography>
+              <Typography>{Math.floor(total_price).toLocaleString()}원</Typography>
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
               <Typography>배송비</Typography>
@@ -248,7 +348,7 @@ const OrderList = () => {
             }}>
               <Typography variant="h6">총 결제금액</Typography>
               <Typography variant="h6" color="primary">
-                {Math.floor(totalPrice + DELIVERY_FEE).toLocaleString()}원
+                {Math.floor(total_price + DELIVERY_FEE).toLocaleString()}원
               </Typography>
             </Box>
 
@@ -259,7 +359,8 @@ const OrderList = () => {
               fullWidth
               size="large"
               sx={{ height: '56px', fontSize: '1.1rem', marginTop: '20px' }}
-              onClick={() => {/* [ ] 결제 처리 로직 추가 */ }}
+              onClick={handlePayment}
+              disabled={!shippingInfo}
             >
               결제하기
             </Button>
