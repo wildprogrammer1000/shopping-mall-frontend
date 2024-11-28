@@ -163,13 +163,7 @@ const OrderList = () => {
                 <TableBody>
                   <TableRow>
                     <TableCell colSpan={2}>{shippingInfo.nickname}</TableCell>
-                    <TableCell
-                      align="right"
-                      colSpan={2}
-                      sx={{
-                        textAlign: 'right',
-                        paddingRight: 2  // 필요한 경우 여백 조정
-                      }}>
+                    <TableCell align="right" colSpan={2}>
                       <Button
                         variant="contained"
                         color="primary"
@@ -180,14 +174,6 @@ const OrderList = () => {
                       </Button>
                     </TableCell>
                   </TableRow>
-                  <AddressListModal
-                    open={open}
-                    handleClose={() => setOpen(false)}
-                    addressList={addressList}
-                    onSelectAddress={handleAddressSelect}
-                    fetchAddressList={fetchAddressList}
-                    user={user}
-                  />
                   <TableRow>
                     <TableCell colSpan={3}>{shippingInfo.address}</TableCell>
                   </TableRow>
@@ -199,9 +185,26 @@ const OrderList = () => {
               </Table>
             </TableContainer>
           ) : (
-            <Typography color="error">
-              등록된 배송지가 없습니다. 배송지를 먼저 등록해주세요.
-            </Typography>
+            <Box sx={{ 
+              padding: '20px', 
+              border: '1px solid #e0e0e0', 
+              borderRadius: '4px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
+              <Typography color="error" sx={{ marginBottom: '10px' }}>
+                등록된 배송지가 없습니다.
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setOpen(true)}
+              >
+                배송지 등록하기
+              </Button>
+            </Box>
           )}
           {/* Snackbar 추가 */}
           <Snackbar
@@ -263,6 +266,18 @@ const OrderList = () => {
           </Box>
         </Box>
       </Box>
+
+      {/* Modal은 user가 있을 때만 렌더링 */}
+      {user && (
+        <AddressListModal
+          open={open}
+          handleClose={() => setOpen(false)}
+          addressList={addressList}
+          onSelectAddress={handleAddressSelect}
+          fetchAddressList={fetchAddressList}
+          user={user}
+        />
+      )}
     </Box>
   );
 };

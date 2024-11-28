@@ -1,6 +1,8 @@
 import { Modal, Box, Typography, List, ListItem, ListItemText, Radio, Button, TextField, FormControlLabel, Checkbox } from '@mui/material';
 import { useState } from 'react';
 import { requestFetch } from '../utils/fetch';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
 
 const style = {
   position: 'absolute',
@@ -16,7 +18,6 @@ const style = {
 
 const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fetchAddressList, user }) => {
 
-  const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [newAddress, setNewAddress] = useState({
     id: user.id || '',
@@ -29,9 +30,9 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
   });
   const [detailAddress, setDetailAddress] = useState('');
 
-  const handleSelect = () => {
-    if (selectedAddress) {
-      onSelectAddress(selectedAddress);
+  const handleAddressClick = (address) => {
+    if (window.confirm('이 주소를 배송지로 선택하시겠습니까?')) {
+      onSelectAddress(address);
       handleClose();
     }
   };
@@ -112,6 +113,28 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
     }
   };
 
+  const handleDeleteAddress = async (address, e) => {
+    e.stopPropagation(); // 주소 선택 이벤트 전파 방지
+    
+    if (window.confirm('이 주소를 삭제하시겠습니까?')) {
+      try {
+        await requestFetch('/user/deleteShippingInfo', {
+          method: 'POST',
+          data: {
+            id: user.id,
+            shipping_id: address.shipping_id
+          }
+        });
+        
+        alert('배송지가 삭제되었습니다.');
+        fetchAddressList(); // 배송지 목록 새로고침
+      } catch (error) {
+        console.error('Error:', error);
+        alert('배송지 삭제 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
   return (
     <Modal
       open={open}
@@ -134,65 +157,119 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
                 배송지 추가
               </Button>
             </Box>
-            <List sx={{
-              mb: 2,
-              maxHeight: '400px',  // 최대 높이 설정
-              overflow: 'auto'     // 스크롤 추가
-            }}>
-              {addressList.map((address, index) => (
-                <ListItem
-                  key={index}
-                  sx={{
-                    border: '1px solid #eee',
-                    mb: 1,
-                    borderRadius: 1,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    cursor: 'pointer'  // 클릭 가능함을 표시
-                  }}
-                  onClick={() => onSelectAddress(address)}  // 클릭 시 배송지 선택
-                >
-                  <div>
-                    <Typography variant="subtitle1" component="div">
-                      {address.nickname || '배송지 ' + (index + 1)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {address.name} | {address.phone}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {address.address}
-                    </Typography>
-                  </div>
-                  <div
-                    style={{ display: 'flex', alignItems: 'center' }}
-                    onClick={(e) => e.stopPropagation()}  // 라디오 버튼 클릭 시 배송지 선택 방지
-                  >
-                    {address.is_default === 1 ? (
-                      <Typography variant="body2" color="primary">
-                        기본배송지
-                      </Typography>
-                    ) : (
-                      <Radio
-                        checked={false}
-                        onChange={() => handleDefaultAddressChange(address)}
-                        name="default-address"
-                        size="small"
-                      />
-                    )}
-                  </div>
-                </ListItem>
-              ))}
-            </List>
+            
+            {addressList.length === 0 ? (
+              <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                py: 4,
+                border: '1px dashed #ccc',
+                borderRadius: 1,
+                backgroundColor: '#f8f8f8'
+              }}>
+                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                  등록된 배송지가 없습니다.
+                </Typography>
+                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                  배송지를 추가해주세요.
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Box sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '10px 16px',
+                  borderBottom: '2px solid #eee',
+                  mb: 2,
+                  fontWeight: 'bold',
+                  color: '#666'
+                }}>
+                  <Box sx={{ flex: 1 }}>배송지</Box>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: '10px',
+                    alignItems: 'center'
+                  }}>
+                    <Box sx={{ width: '70px', textAlign: 'center' }}>기본배송지</Box>
+                    <Box sx={{ width: '30px', textAlign: 'center' }}>삭제</Box>
+                  </Box>
+                </Box>
+                <List sx={{
+                  mb: 2,
+                  maxHeight: '400px',
+                  overflow: 'auto'
+                }}>
+                  {addressList.map((address, index) => (
+                    <ListItem
+                      key={index}
+                      sx={{
+                        border: '1px solid #eee',
+                        mb: 1,
+                        borderRadius: 1,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          backgroundColor: '#f5f5f5',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        },
+                        '&:active': {
+                          backgroundColor: '#e8e8e8',
+                          transform: 'translateY(0)',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                        }
+                      }}
+                      onClick={() => handleAddressClick(address)}
+                    >
+                      <div>
+                        <Typography variant="subtitle1" component="div">
+                          {address.nickname || '배송지 ' + (index + 1)}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {address.name} | {address.phone}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {address.address}
+                        </Typography>
+                      </div>
+                      <div
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {address.is_default === 1 ? (
+                          <Typography variant="body2" color="primary">
+                            기본배송지
+                          </Typography>
+                        ) : (
+                          <Radio
+                            checked={false}
+                            onChange={() => handleDefaultAddressChange(address)}
+                            name="default-address"
+                            size="small"
+                          />
+                        )}
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleDeleteAddress(address, e)}
+                          sx={{ ml: 1 }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </div>
+                    </ListItem>
+                  ))}
+                </List>
+              </>
+            )}
+            
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
               <Button variant="outlined" onClick={handleClose}>
                 취소
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleSelect}
-                disabled={!selectedAddress}
-              >
-                선택
               </Button>
             </Box>
           </>
