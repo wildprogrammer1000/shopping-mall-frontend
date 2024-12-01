@@ -42,7 +42,7 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
       oncomplete: function (data) {
         setNewAddress(prev => ({
           ...prev,
-          shipping_address: data.shipping_address,
+          shipping_address: data.address,
           zonecode: data.zonecode
         }));
         setShowAddressForm(true);
@@ -294,13 +294,15 @@ const AddressListModal = ({ open, handleClose, addressList, onSelectAddress, fet
                 required
                 placeholder="010-0000-0000"
               />
-              <TextField
-                label="주소"
-                value={newAddress.shipping_address}
-                InputProps={{ readOnly: true }}
-                fullWidth
-                required
-              />
+              {newAddress.shipping_address && (
+                <TextField
+                  label="주소"
+                  value={newAddress.shipping_address}
+                  InputProps={{ readOnly: true }}
+                  fullWidth
+                  required
+                />
+              )}
               {newAddress.shipping_address && (
                 <TextField
                   fullWidth

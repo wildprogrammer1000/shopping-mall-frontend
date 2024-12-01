@@ -13,6 +13,8 @@ import OrderList from "./components/OrderList.jsx";
 import AddressListModal from "./components/AddressListModal.jsx";
 import Header from "./components/Header.jsx";
 import OrderCompletePage from "./components/OrderCompletePage.jsx";
+import PaymentList from "./components/PaymentList.jsx";
+import PaymentDetail from "./components/PaymentDetail.jsx";
 
 const Layout = () => {
   return (
@@ -36,6 +38,8 @@ const router = createBrowserRouter([
       { path: PATH.ORDERLIST, element: <OrderList /> },
       { path: PATH.ADDRESSLISTMODAL, element: <AddressListModal /> },
       { path: PATH.ORDERCOMPLETE, element: <OrderCompletePage /> },
+      { path: PATH.PAYMENTLIST, element: <PaymentList /> },
+      { path: `/payment/:orderId`, element: <PaymentDetail /> },
     ],
   },
 ]);

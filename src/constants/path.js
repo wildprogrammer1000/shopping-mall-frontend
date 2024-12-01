@@ -19,6 +19,7 @@ export const PATH = {
   CARTLIST: "/getCartList",
 
   // ORDER
-  ORDERLIST: "/orderList",
+  ORDERLIST: "/getOrderList",
   ORDERCOMPLETE: "/order/complete",
+  PAYMENTLIST: "/getPaymentAllList",
 };

@@ -21,7 +21,7 @@ const OrderList = () => {
   const location = useLocation();
   const { products, total_price } = location.state || { products: [], total_price: 0 };
   const [shippingInfo, setShippingInfo] = useState(null);
-  const DELIVERY_FEE = 3000; // 배송비 OrderList
+  const DELIVERY_FEE = 0; // 배송비 OrderList
   const [user, setUser] = useState(JSON.parse(sessionStorage.getItem('user')));
   const [open, setOpen] = useState(false);
   const [addressList, setAddressList] = useState([]);
@@ -90,7 +90,8 @@ const OrderList = () => {
       pay_method: 'card',
       merchant_uid: `ord-${crypto.randomUUID()}`,
       name: orderName,
-      amount: total_price + DELIVERY_FEE,
+      // amount: total_price + DELIVERY_FEE,
+      amount: 1000,
       buyer_email: user.email || '',
       buyer_name: shippingInfo.name,
       buyer_tel: shippingInfo.phone,
@@ -102,12 +103,15 @@ const OrderList = () => {
             imp_uid: response.imp_uid,
             merchant_uid: response.merchant_uid,
             id: user.id,
+            order_name: orderName,
             products: products,
             shippingInfo: shippingInfo,
             totalAmount: total_price + DELIVERY_FEE,
             shippingFee: DELIVERY_FEE,
             paymentStatus: 'SUCCESS'
           };
+
+          console.log("orderData: ", orderData);
 
           try {
             const orderResponse = await requestFetch('/order/complete', {

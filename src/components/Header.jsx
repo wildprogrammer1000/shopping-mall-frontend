@@ -42,6 +42,7 @@ const Header = () => {
           <div>{user.nickname}</div>
           <Link to={PATH.MYPAGE}>마이페이지</Link>
           <Link to={PATH.CARTLIST}>장바구니</Link>
+          <Link to={PATH.PAYMENTLIST}>구매내역</Link>
           <div onClick={handleLogout} style={{ cursor: 'pointer' }}>로그아웃</div>
         </div>
       ) : (

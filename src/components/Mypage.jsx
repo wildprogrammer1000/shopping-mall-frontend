@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { requestFetch } from '../utils/fetch';
-import { Link } from "react-router-dom";
-import { PATH } from "../constants/path";
 import { useUser } from '../store/context';
 
 const MyPage = () => {
@@ -28,8 +26,6 @@ const MyPage = () => {
 
   return (
     <div>
-      <Link to={PATH.ROOT}>쇼핑몰</Link>
-
       <h2>마이페이지</h2>
       <div>이메일: {user.email}</div>
       <div>닉네임: {user.nickname}</div>

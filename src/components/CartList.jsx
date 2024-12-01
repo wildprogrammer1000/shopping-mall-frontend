@@ -218,7 +218,7 @@ const CartList = () => {
     }
     
     // 선택된 상품 정보를 state로 전달하며 주문 페이지로 이동
-    navigate('/orderList', { 
+    navigate('/getOrderList', { 
       state: { 
         products: selectedProducts,
         total_price: getTotalPrice()
